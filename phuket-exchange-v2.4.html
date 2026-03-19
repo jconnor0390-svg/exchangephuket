@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ExchangePhuket — Best Rates Near You</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C; --gold-light: #E8C96A;
+    --dark: #0D0D0D; --dark2: #151515; --dark3: #1E1E1E; --dark4: #2A2A2A;
+    --text: #F0EDE8; --text-muted: #888;
+    --green: #4CAF7D; --red: #E05555; --orange: #F59E0B;
+    --border: rgba(201,168,76,0.15);
+    --grade1: #4CAF7D; --grade2: #8BC34A; --grade3: #F59E0B; --grade4: #E05555;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  /* MAP TOUCH */
+  .map-area { touch-action: pan-x pan-y; }
+  #googleMap { touch-action: pan-x pan-y; position: relative; }
+
+  /* === MOBILE === */
+  /* LANG BAR MOBILE */
+  .lang-bar-mobile { display:none; background:var(--dark2); border-bottom:1px solid var(--border); padding:10px 14px; gap:8px; overflow-x:auto; scrollbar-width:none; flex-shrink:0; }
+  .lang-bar-mobile::-webkit-scrollbar { display:none; }
+  @media (max-width: 768px) {
+    .lang-bar-mobile { display:flex; }
+    .header-right { display:none; }
+    .header-center { display:flex !important; font-size:0.72rem; padding:5px 10px; }
+  }
+
+  @media (max-width: 768px) {
+    .main { flex-direction: column; }
+    .panel { width: 100%; height: 50vh; border-right: none; border-bottom: 1px solid var(--border); }
+    .map-area { flex: 1; min-height: 50vh; }
+    .header-center { display: none; }
+    .lang-btn { padding: 4px 8px; font-size: 0.72rem; }
+    .comp-summary { grid-template-columns: 1fr 1fr; }
+    .rank-badge { font-size: 0.52rem; padding: 2px 5px; }
+    .ex-card .card-rates { grid-template-columns: repeat(3,1fr); }
+    body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  }
+  @media (max-width: 480px) {
+    header { padding: 10px 14px; }
+    .logo { font-size: 1rem; }
+    .calculator { padding: 10px 12px; }
+    .comparison { padding: 10px 12px; }
+    .filter-bar { padding: 8px 12px; }
+    .exchange-list { padding: 0 8px 8px; }
+  }
+  body { font-family:'DM Sans',sans-serif; background:var(--dark); color:var(--text); height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+
+  header { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:var(--dark2); border-bottom:1px solid var(--border); z-index:100; flex-shrink:0; }
+  .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.15rem; }
+  .logo span { color:var(--gold); }
+  .header-center { display:flex; align-items:center; gap:8px; background:var(--dark3); border:1px solid var(--border); border-radius:50px; padding:7px 16px; font-size:0.8rem; color:var(--text-muted); }
+  .dot { width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .header-right { display:flex; gap:8px; }
+  .lang-btn { background:var(--dark3); border:1px solid var(--border); border-radius:50px; padding:7px 14px; color:var(--text); cursor:pointer; font-size:0.8rem; font-family:'DM Sans',sans-serif; transition:all .2s; white-space:nowrap; }
+  .lang-btn.active { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,.12); }
+
+  .main { display:flex; flex:1; overflow:hidden; }
+  .panel { width:390px; flex-shrink:0; background:var(--dark2); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
+
+  /* CALCULATOR */
+  .calculator { padding:14px 16px; border-bottom:1px solid var(--border); background:var(--dark3); }
+  .calc-label { font-family:'Syne',sans-serif; font-size:0.65rem; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:8px; }
+  .calc-row { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+  .calc-input { flex:1; background:var(--dark4); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-size:1.05rem; font-family:'Syne',sans-serif; font-weight:600; outline:none; }
+  .calc-input:focus { border-color:var(--gold); }
+  .currency-select { background:var(--dark4); border:1px solid var(--border); border-radius:10px; padding:10px 8px; color:var(--text); font-size:0.88rem; font-family:'Syne',sans-serif; font-weight:600; outline:none; cursor:pointer; min-width:80px; }
+  .calc-arrow { text-align:center; color:var(--gold); font-size:1rem; margin:2px 0; }
+  .calc-result { background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.03)); border:1px solid rgba(201,168,76,.35); border-radius:10px; padding:10px 13px; margin-top:4px; }
+  .calc-amount { font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800; color:var(--gold-light); }
+  .calc-sub { font-size:0.7rem; color:var(--text-muted); margin-top:2px; }
+
+  /* COMPARISON PANEL */
+  .comparison { padding:12px 14px; border-bottom:1px solid var(--border); background:var(--dark2); }
+  .comp-title { font-family:'Syne',sans-serif; font-size:0.65rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; }
+
+  .comp-summary { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+  .comp-box { border-radius:10px; padding:10px 12px; border:1px solid; }
+  .comp-box.best-island { background:rgba(76,175,125,.08); border-color:rgba(76,175,125,.3); }
+  .comp-box.best-nearby { background:rgba(201,168,76,.08); border-color:rgba(201,168,76,.3); }
+  .comp-box-label { font-size:0.62rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+  .comp-box.best-island .comp-box-label { color:var(--green); }
+  .comp-box.best-nearby .comp-box-label { color:var(--gold); }
+  .comp-box-name { font-family:'Syne',sans-serif; font-weight:700; font-size:0.78rem; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .comp-box-rate { font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800; }
+  .comp-box.best-island .comp-box-rate { color:var(--green); }
+  .comp-box.best-nearby .comp-box-rate { color:var(--gold-light); }
+  .comp-box-dist { font-size:0.68rem; color:var(--text-muted); margin-top:2px; }
+
+  /* GRADE BAR */
+  .grade-bar { margin-top:2px; }
+  .grade-bar-label { display:flex; justify-content:space-between; font-size:0.62rem; color:var(--text-muted); margin-bottom:5px; }
+  .grade-track { height:6px; border-radius:3px; background:var(--dark4); position:relative; overflow:hidden; }
+  .grade-fill { height:100%; border-radius:3px; transition:width .6s ease; }
+  .grade-ticks { display:flex; justify-content:space-between; margin-top:4px; }
+  .grade-tick { font-size:0.6rem; color:var(--text-muted); text-align:center; }
+  .grade-tick.active { font-weight:700; }
+  .grade-tick.g1 { color:var(--grade1); }
+  .grade-tick.g2 { color:var(--grade2); }
+  .grade-tick.g3 { color:var(--grade3); }
+  .grade-tick.g4 { color:var(--grade4); }
+
+  /* SAVINGS INSIGHT */
+  .savings-insight { background:rgba(76,175,125,.06); border:1px solid rgba(76,175,125,.2); border-radius:8px; padding:8px 10px; margin-top:8px; font-size:0.72rem; color:var(--text-muted); line-height:1.5; }
+  .savings-insight strong { color:var(--green); }
+
+  /* FILTER */
+  .filter-bar { padding:10px 14px; display:flex; gap:6px; flex-wrap:wrap; border-bottom:1px solid var(--border); }
+  .filter-chip { background:var(--dark3); border:1px solid var(--border); border-radius:50px; padding:4px 11px; font-size:0.72rem; cursor:pointer; color:var(--text-muted); transition:all .2s; }
+  .filter-chip:hover,.filter-chip.active { border-color:var(--gold); color:var(--gold); background:rgba(201,168,76,.08); }
+  .rate-note { font-size:0.62rem; color:var(--text-muted); padding:4px 16px; font-style:italic; border-bottom:1px solid var(--border); }
+
+  .list-header { padding:10px 16px 5px; display:flex; justify-content:space-between; align-items:center; }
+  .list-title { font-family:'Syne',sans-serif; font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); }
+  .list-count { font-size:0.72rem; color:var(--text-muted); }
+
+  .exchange-list { flex:1; overflow-y:auto; padding:0 10px 10px; }
+  .exchange-list::-webkit-scrollbar { width:3px; }
+  .exchange-list::-webkit-scrollbar-thumb { background:var(--dark4); border-radius:2px; }
+
+  /* CARDS */
+  .exchange-card { background:var(--dark3); border:1px solid var(--border); border-radius:13px; padding:12px 13px; margin-bottom:7px; cursor:pointer; transition:all .2s; position:relative; overflow:hidden; animation:slideIn .3s ease both; }
+  @keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+  .exchange-card:hover { border-color:rgba(201,168,76,.4); background:var(--dark4); transform:translateX(2px); }
+
+  /* Grade border colors */
+  .exchange-card.grade-1 { border-left:3px solid var(--grade1); }
+  .exchange-card.grade-2 { border-left:3px solid var(--grade2); }
+  .exchange-card.grade-3 { border-left:3px solid var(--grade3); }
+  .exchange-card.grade-4 { border-left:3px solid var(--grade4); }
+  .exchange-card.best { background:linear-gradient(135deg,rgba(76,175,125,.06),var(--dark3)); }
+
+  .rank-badge { position:absolute; top:9px; right:10px; font-family:'Syne',sans-serif; font-size:0.58rem; font-weight:700; letter-spacing:.8px; padding:2px 7px; border-radius:50px; border:1px solid; }
+  .rank-badge.r1 { color:var(--grade1); background:rgba(76,175,125,.12); border-color:rgba(76,175,125,.3); }
+  .rank-badge.r2 { color:var(--grade2); background:rgba(139,195,74,.1); border-color:rgba(139,195,74,.3); }
+  .rank-badge.r3 { color:var(--grade3); background:rgba(245,158,11,.1); border-color:rgba(245,158,11,.3); }
+  .rank-badge.rn { color:#4A9EFF; background:rgba(74,158,255,.1); border-color:rgba(74,158,255,.2); }
+
+  .card-top { display:flex; align-items:flex-start; gap:10px; margin-bottom:8px; }
+  .exchanger-icon { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+  .exchanger-info { flex:1; min-width:0; }
+  .exchanger-name { font-family:'Syne',sans-serif; font-weight:700; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:70px; }
+  .exchanger-meta { display:flex; gap:7px; margin-top:3px; font-size:0.68rem; color:var(--text-muted); flex-wrap:wrap; }
+  .meta-item { display:flex; align-items:center; gap:3px; }
+  .status-dot { width:5px; height:5px; border-radius:50%; }
+  .status-dot.open { background:var(--green); }
+  .status-dot.closed { background:var(--red); }
+
+  /* RATE ROW with grade bar */
+  .rate-row { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; margin-bottom:6px; }
+  .rate-box { background:var(--dark2); border-radius:7px; padding:5px 6px; text-align:center; position:relative; }
+  .rate-box.active-currency { background:var(--dark4); border:1px solid rgba(201,168,76,.3); }
+  .rate-currency { font-size:0.58rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:1px; }
+  .rate-value { font-family:'Syne',sans-serif; font-size:0.8rem; font-weight:700; }
+  .rate-value.highlight { color:var(--gold-light); }
+
+  /* Mini grade bar inside card */
+  .mini-grade { height:3px; border-radius:2px; margin-top:3px; transition:width .5s; }
+
+  .card-footer { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid rgba(255,255,255,.05); }
+  .card-badges { display:flex; gap:5px; flex-wrap:wrap; }
+  .badge { font-size:0.65rem; border-radius:50px; padding:2px 7px; border:1px solid; }
+  .badge.save { color:var(--green); background:rgba(76,175,125,.1); border-color:rgba(76,175,125,.2); }
+  .badge.nearby { color:var(--gold); background:rgba(201,168,76,.1); border-color:rgba(201,168,76,.2); }
+  .badge.google { color:#4A9EFF; background:rgba(74,158,255,.08); border-color:rgba(74,158,255,.2); }
+  .card-actions { display:flex; gap:5px; }
+  .nav-btn { background:var(--dark4); border:1px solid var(--border); border-radius:50px; padding:4px 10px; font-size:0.68rem; color:var(--gold); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .2s; }
+  .nav-btn:hover { background:rgba(201,168,76,.15); border-color:var(--gold); }
+  .nav-btn.blue { color:#4A9EFF; border-color:rgba(74,158,255,.3); }
+
+  /* MAP */
+  .map-area { flex:1; position:relative; }
+  #googleMap { width:100%; height:100%; }
+
+  .ticker { position:absolute; top:12px; left:50%; transform:translateX(-50%); background:rgba(13,13,13,.9); backdrop-filter:blur(12px); border:1px solid var(--border); border-radius:50px; padding:6px 16px; display:flex; gap:18px; z-index:20; white-space:nowrap; }
+  .ticker-item { display:flex; align-items:center; gap:6px; font-size:0.74rem; }
+  .ticker-pair { font-family:'Syne',sans-serif; font-weight:700; color:var(--gold); font-size:0.68rem; }
+  .ticker-val { font-family:'Syne',sans-serif; font-weight:600; font-size:0.8rem; }
+  .ticker-change { font-size:0.65rem; color:var(--text-muted); }
+
+  .map-loading { position:absolute; inset:0; background:var(--dark); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; z-index:50; }
+  .spinner { width:36px; height:36px; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 1s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .loading-text { font-family:'Syne',sans-serif; font-size:0.82rem; color:var(--text-muted); }
+
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--dark2); border:1px solid rgba(201,168,76,.4); border-radius:50px; padding:8px 20px; font-size:0.78rem; z-index:999; transition:transform .3s; box-shadow:0 8px 30px rgba(0,0,0,.4); }
+  .toast.show { transform:translateY(0); }
+</style>
+<!-- Firebase Realtime DB (read-only для туристов) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDrYbOPqJx317JLwg3u6v4I8LCbW6C2-60",
+    authDomain: "exchangephuket-e8c03.firebaseapp.com",
+    databaseURL: "https://exchangephuket-e8c03-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "exchangephuket-e8c03",
+    storageBucket: "exchangephuket-e8c03.firebasestorage.app",
+    messagingSenderId: "1039670335066",
+    appId: "1:1039670335066:web:cf5d58f774fcb265332a63"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Exchange IDs to watch
+  const EXCH_IDS = ['ex24pro','superrich','mamy','moneyshop','sia'];
+
+  EXCH_IDS.forEach(exchId => {
+    onValue(ref(db, 'exchangers/' + exchId), snap => {
+      if(!snap.exists()) return;
+      const data = snap.val();
+      if(!data.rates) return;
+
+      // Find exchanger in our list and update rates
+      if(window.allExchangers) {
+        const ex = window.allExchangers.find(e => e.id === 'k_' + exchId || e.fbId === exchId);
+        if(ex && data.rates) {
+          ['USD','EUR','RUB','GBP','CNY','AUD','JPY','AED','SGD','CHF','INR','MYR','HKD'].forEach(code => {
+            if(data.rates[code] && data.rates[code].sell) {
+              ex.rates[code] = data.rates[code].sell;
+            }
+          });
+          // Update status
+          if(data.status) ex.open = data.status.online !== false;
+          // Re-render
+          if(window.onUpdate) window.onUpdate();
+          console.log('🔥 Live rates updated for', exchId);
+        }
+      }
+    });
+  });
+
+  window._firebaseReady = true;
+  console.log('🔥 Firebase connected — live rates enabled');
+</script>
+</head>
+<body>
+
+<header>
+  <div class="logo">Exchange<span>Phuket</span></div>
+  <div class="header-center">
+    <div class="dot"></div>
+    <span id="headerStatus">Loading exchanges...</span>
+  </div>
+  <div class="header-right">
+    <button class="lang-btn active" onclick="setLang('en',this)">🇬🇧 EN</button>
+    <button class="lang-btn" onclick="setLang('ru',this)">🇷🇺 RU</button>
+    <button class="lang-btn" onclick="setLang('zh',this)">🇨🇳 中文</button>
+    <button class="lang-btn" onclick="setLang('th',this)">🇹🇭 ไทย</button>
+    <button class="lang-btn" onclick="setLang('de',this)">🇩🇪 DE</button>
+    <button class="lang-btn" onclick="setLang('fr',this)">🇫🇷 FR</button>
+  </div>
+</header>
+
+<!-- MOBILE LANG BAR -->
+<div class="lang-bar-mobile">
+  <button class="lang-btn active" onclick="setLang('en',this)">🇬🇧 EN</button>
+  <button class="lang-btn" onclick="setLang('ru',this)">🇷🇺 RU</button>
+  <button class="lang-btn" onclick="setLang('zh',this)">🇨🇳 中文</button>
+  <button class="lang-btn" onclick="setLang('th',this)">🇹🇭 ไทย</button>
+  <button class="lang-btn" onclick="setLang('de',this)">🇩🇪 DE</button>
+  <button class="lang-btn" onclick="setLang('fr',this)">🇫🇷 FR</button>
+</div>
+
+<div class="main">
+  <div class="panel">
+
+    <!-- Calculator -->
+    <div class="calculator">
+      <div class="calc-label">Currency Calculator</div>
+      <div class="calc-row">
+        <input type="number" class="calc-input" id="amountIn" value="500" oninput="onUpdate()">
+        <select class="currency-select" id="currencyFrom" onchange="onUpdate()">
+          <option value="USD">🇺🇸 USD</option>
+          <option value="EUR">🇪🇺 EUR</option>
+          <option value="RUB">🇷🇺 RUB</option>
+          <option value="GBP">🇬🇧 GBP</option>
+          <option value="CNY">🇨🇳 CNY</option>
+        </select>
+      </div>
+      <div class="calc-arrow">↓</div>
+      <div class="calc-result">
+        <div class="calc-amount" id="calcResult">—</div>
+        <div class="calc-sub" id="calcSub">Searching best rate...</div>
+      </div>
+    </div>
+
+    <!-- Comparison Panel -->
+    <div class="comparison">
+      <div class="comp-title">Rate Comparison · <span id="compCurrency">USD</span></div>
+
+      <div class="comp-summary">
+        <div class="comp-box best-island">
+          <div class="comp-box-label">🏆 Best on island</div>
+          <div class="comp-box-name" id="bestIslandName">—</div>
+          <div class="comp-box-rate" id="bestIslandRate">—</div>
+          <div class="comp-box-dist" id="bestIslandDist"></div>
+        </div>
+        <div class="comp-box best-nearby">
+          <div class="comp-box-label">📍 Best nearby</div>
+          <div class="comp-box-name" id="bestNearbyName">—</div>
+          <div class="comp-box-rate" id="bestNearbyRate">—</div>
+          <div class="comp-box-dist" id="bestNearbyDist"></div>
+        </div>
+      </div>
+
+      <!-- Grade bar -->
+      <div class="grade-bar">
+        <div class="grade-bar-label">
+          <span>Worst</span>
+          <span id="gradeLabel">Rate quality</span>
+          <span>Best</span>
+        </div>
+        <div class="grade-track">
+          <div class="grade-fill" id="gradeFill" style="width:0%"></div>
+        </div>
+        <div class="grade-ticks">
+          <div class="grade-tick g4" id="tick0">—</div>
+          <div class="grade-tick g3" id="tick1">—</div>
+          <div class="grade-tick g2" id="tick2">—</div>
+          <div class="grade-tick g1" id="tick3">—</div>
+        </div>
+      </div>
+
+      <!-- Savings insight -->
+      <div class="savings-insight" id="savingsInsight">
+        Select currency to see comparison
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+      <div class="filter-chip active" onclick="setFilter('all',this)">All</div>
+      <div class="filter-chip" onclick="setFilter('open',this)">Open now</div>
+      <div class="filter-chip" onclick="setFilter('nocomm',this)">No commission</div>
+      <div class="filter-chip" onclick="setFilter('nearby',this)">≤ 1km</div>
+    </div>
+    <div class="rate-note">* Rates Mar 11, 2026 · Google Places live · Always verify at counter</div>
+
+    <div class="list-header">
+      <div class="list-title">Ranked by rate</div>
+      <div class="list-count" id="listCount">Loading...</div>
+    </div>
+    <div class="exchange-list" id="exchangeList">
+      <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:0.82rem">
+        <div class="spinner" style="margin:0 auto 12px"></div>
+        Loading exchanges...
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div class="map-area">
+    <div class="map-loading" id="mapLoading">
+      <div class="spinner"></div>
+      <div class="loading-text">Loading Google Maps...</div>
+    </div>
+    <div id="googleMap"></div>
+    <div class="ticker">
+      <div class="ticker-item"><span class="ticker-pair">USD</span><span class="ticker-val" id="t1">31.74</span></div>
+      <div class="ticker-item"><span class="ticker-pair">EUR</span><span class="ticker-val" id="t2">34.50</span></div>
+      <div class="ticker-item"><span class="ticker-pair">RUB</span><span class="ticker-val" id="t3">0.344</span></div>
+      <div class="ticker-item"><span class="ticker-pair">GBP</span><span class="ticker-val" id="t4">40.90</span></div>
+      <div class="ticker-item"><span class="ticker-pair">AUD</span><span class="ticker-val" id="t5">19.80</span></div>
+      <div class="ticker-item"><span class="ticker-pair">JPY</span><span class="ticker-val" id="t6">0.212</span></div>
+      <div class="ticker-item"><span class="ticker-pair">AED</span><span class="ticker-val" id="t7">8.64</span></div>
+      <div class="ticker-item"><span class="ticker-pair">CNY</span><span class="ticker-val" id="t8">4.35</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GMAPS_KEY = 'AIzaSyBThv7AAcgOQK-Bcuj_B1iazhgHnmTUAEc';
+const PATONG = { lat:7.8958, lng:98.2963 };
+
+window.allExchangers = null;
+const knownExchangers = [
+  { id:'k1', fbId:'superrich', name:'SuperRich (Jungceylon)', area:'Patong', address:'Jungceylon Mall, Rat-U-Thit Rd', lat:7.8958, lng:98.2963, rating:4.8, reviews:1240, open:true, hours:'10:00–22:00', noCommission:true, website:'https://www.superrichthailand.com', rates:{USD:31.55,EUR:34.40,RUB:0.342,GBP:40.80,CNY:4.35,AUD:19.60,JPY:0.209,AED:8.58,SGD:23.40,CHF:34.90,INR:0.368,MYR:7.05,HKD:4.04}, icon:'🟢' },
+  { id:'k2', name:'YES Exchange Patong',    area:'Patong', address:'Bangla Rd, Patong Beach',       lat:7.8941, lng:98.2944, rating:4.7, reviews:856,  open:true, hours:'09:00–23:00', noCommission:true, website:'https://yesexchangethailand.com', rates:{USD:31.50,EUR:34.30,RUB:0.340,GBP:40.70,CNY:4.33,AUD:19.50,JPY:0.208,AED:8.55,SGD:23.30,CHF:34.80,INR:0.366,MYR:7.02,HKD:4.02}, icon:'💛' },
+  { id:'k3', fbId:'moneyshop', name:'Money Shop Phuket',      area:'Patong', address:'Rat-U-Thit 200 Pi Rd',          lat:7.8952, lng:98.2958, rating:4.6, reviews:634,  open:true, hours:'09:00–22:00', noCommission:true, website:'https://moneyshopphuket.com/en', rates:{USD:31.45,EUR:34.20,RUB:0.338,GBP:40.60,CNY:4.31,AUD:19.45,JPY:0.207,AED:8.52,SGD:23.20,CHF:34.70,INR:0.365,MYR:7.00,HKD:4.01}, icon:'🏪' },
+  { id:'k4', fbId:'mamy', name:'Mamy Exchange',          area:'Phuket Town', address:'Phang Nga Rd, Phuket Town',lat:7.8804, lng:98.3923, rating:4.9, reviews:412,  open:true, hours:'09:00–19:00', noCommission:true, website:'https://mamyexchange.com', rates:{USD:31.58,EUR:34.45,RUB:0.343,GBP:40.85,CNY:4.36,AUD:19.65,JPY:0.210,AED:8.60,SGD:23.45,CHF:34.95,INR:0.370,MYR:7.08,HKD:4.06}, icon:'⭐' },
+  { id:'k5', fbId:'ex24pro', name:'EX24.PRO',               area:'Online/Patong', address:'18 offices · Online 24/7',lat:7.8948, lng:98.2971, rating:4.9, reviews:100000, open:true, hours:'24/7', noCommission:true, website:'https://ex24.pro', rates:{USD:31.32,EUR:36.28,RUB:0.260,GBP:40.50,CNY:4.54,AUD:19.30,JPY:0.205,AED:8.42,SGD:23.00,CHF:34.50,INR:0.361,MYR:6.92,HKD:3.96}, icon:'⚡' },
+  { id:'k6', fbId:'sia', name:'SIA Money Exchange',     area:'Patong', address:'Beach Rd, Patong',              lat:7.8935, lng:98.2932, rating:4.6, reviews:289,  open:true, hours:'09:00–21:00', noCommission:true, website:null, rates:{USD:31.48,EUR:34.25,RUB:0.339,GBP:40.65,CNY:4.32,AUD:19.48,JPY:0.207,AED:8.54,SGD:23.25,CHF:34.75,INR:0.366,MYR:7.01,HKD:4.02}, icon:'🏦' },
+  { id:'k7', name:'HKT Airport Exchange',   area:'Airport', address:"Phuket Int'l Airport",        lat:8.1132, lng:98.3169, rating:3.1, reviews:2140, open:true, hours:'24/7', noCommission:false, website:null, rates:{USD:30.50,EUR:33.10,RUB:0.318,GBP:39.20,CNY:4.12,AUD:18.80,JPY:0.198,AED:8.15,SGD:22.40,CHF:33.50,INR:0.350,MYR:6.65,HKD:3.82}, icon:'✈️' },
+];
+
+let allExchangers = [...knownExchangers];
+window.allExchangers = allExchangers;
+let googlePlaces = [];
+let map, service, markers = [], infoWindow;
+let currentFilter = 'all';
+let userPos = null;
+
+function gradeColor(pct) {
+  if (pct >= 0.75) return 'var(--grade1)';
+  if (pct >= 0.50) return 'var(--grade2)';
+  if (pct >= 0.25) return 'var(--grade3)';
+  return 'var(--grade4)';
+}
+function gradeClass(pct) {
+  if (pct >= 0.75) return 'grade-1';
+  if (pct >= 0.50) return 'grade-2';
+  if (pct >= 0.25) return 'grade-3';
+  return 'grade-4';
+}
+function rankBadge(rank) {
+  if (rank === 1) return { cls:'r1', label:'🥇 #1 ISLAND' };
+  if (rank === 2) return { cls:'r2', label:'🥈 #2' };
+  if (rank === 3) return { cls:'r3', label:'🥉 #3' };
+  return { cls:'rn', label:`#${rank}` };
+}
+function distText(d) {
+  if (d == null) return '';
+  return d < 1000 ? d + 'm' : (d/1000).toFixed(1) + 'km';
+}
+function calcDist(a, b) {
+  const R = 6371000;
+  const dLat = (b.lat - a.lat) * Math.PI/180;
+  const dLng = (b.lng - a.lng) * Math.PI/180;
+  const aa = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(aa), Math.sqrt(1-aa)));
+}
+
+function updateComparison() {
+  const currency = document.getElementById('currencyFrom').value;
+  document.getElementById('compCurrency').textContent = currency;
+
+  const withRates = allExchangers.filter(e => e.rates && e.open !== false);
+  if (!withRates.length) return;
+
+  const sorted = [...withRates].sort((a,b) => b.rates[currency] - a.rates[currency]);
+  const best = sorted[0];
+  const worst = sorted[sorted.length-1];
+  const maxRate = best.rates[currency];
+  const minRate = worst.rates[currency];
+  const spread = maxRate - minRate;
+
+  // Best on island
+  document.getElementById('bestIslandName').textContent = best.name;
+  document.getElementById('bestIslandRate').textContent = best.rates[currency];
+  document.getElementById('bestIslandDist').textContent = best.distance != null ? '📍 ' + distText(best.distance) + ' away' : '📍 ' + best.area;
+
+  // Best nearby (within 2km if we have location, else 2nd best)
+  let nearby = null;
+  if (userPos) {
+    const nearbyList = sorted.filter(e => e.distance != null && e.distance <= 2000);
+    nearby = nearbyList.length ? nearbyList[0] : sorted[0];
+  } else {
+    nearby = sorted[0];
+  }
+  document.getElementById('bestNearbyName').textContent = nearby.name;
+  document.getElementById('bestNearbyRate').textContent = nearby.rates[currency];
+  document.getElementById('bestNearbyDist').textContent = nearby.distance != null ? '📍 ' + distText(nearby.distance) : '📍 ' + nearby.area;
+
+  // Grade ticks — show 4 key rates
+  const step = spread / 3;
+  const ticks = [
+    minRate.toFixed(2),
+    (minRate + step).toFixed(2),
+    (minRate + step*2).toFixed(2),
+    maxRate.toFixed(2)
+  ];
+  ticks.forEach((t,i) => {
+    document.getElementById('tick'+i).textContent = t;
+  });
+
+  // Grade fill for best rate (100%)
+  document.getElementById('gradeFill').style.width = '100%';
+  document.getElementById('gradeFill').style.background = `linear-gradient(90deg, var(--grade4), var(--grade3), var(--grade2), var(--grade1))`;
+
+  // Savings insight
+  const amount = parseFloat(document.getElementById('amountIn').value) || 500;
+  const bestResult = (amount * maxRate).toFixed(0);
+  const worstResult = (amount * minRate).toFixed(0);
+  const diff = (bestResult - worstResult).toLocaleString();
+  const airport = allExchangers.find(e => e.id === 'k7');
+  const airportRate = airport ? airport.rates[currency] : minRate;
+  const vsAirport = ((maxRate - airportRate) * amount).toFixed(0);
+
+  document.getElementById('savingsInsight').innerHTML =
+    `For <strong>${amount} ${currency}</strong>: best gives <strong>${parseInt(bestResult).toLocaleString()} ฿</strong> vs worst <strong>${parseInt(worstResult).toLocaleString()} ฿</strong><br>
+     ✅ Go to <strong>${best.name}</strong> — save <strong>+${parseInt(vsAirport).toLocaleString()} ฿</strong> vs airport`;
+}
+
+function calcRate() {
+  const amount = parseFloat(document.getElementById('amountIn').value) || 0;
+  const currency = document.getElementById('currencyFrom').value;
+  const withRates = allExchangers.filter(e => e.rates && e.open !== false);
+  if (!withRates.length) return;
+  const best = [...withRates].sort((a,b) => b.rates[currency]-a.rates[currency])[0];
+  const result = (amount * best.rates[currency]).toLocaleString('en', {maximumFractionDigits:0});
+  document.getElementById('calcResult').textContent = result + ' ฿';
+  const d = best.distance != null ? ` · ${distText(best.distance)}` : '';
+  document.getElementById('calcSub').textContent = `Best: ${best.rates[currency]} · ${best.name}${d}`;
+}
+
+function renderList() {
+  const currency = document.getElementById('currencyFrom').value;
+  let list = [...allExchangers];
+  if (currentFilter === 'open') list = list.filter(e => e.open === true);
+  if (currentFilter === 'nocomm') list = list.filter(e => e.noCommission);
+  if (currentFilter === 'nearby') list = list.filter(e => !e.distance || e.distance <= 1000);
+
+  const withRates = list.filter(e => e.rates).sort((a,b) => b.rates[currency]-a.rates[currency]);
+  const noRates = list.filter(e => !e.rates).sort((a,b) => (b.rating||0)-(a.rating||0));
+  const sorted = [...withRates, ...noRates];
+
+  const maxRate = withRates.length ? withRates[0].rates[currency] : 0;
+  const minRate = withRates.length ? withRates[withRates.length-1].rates[currency] : 0;
+  const spread = maxRate - minRate || 1;
+
+  document.getElementById('listCount').textContent = sorted.length + ' found';
+
+  const html = sorted.map((ex, i) => {
+    const rank = i + 1;
+    const hasRates = !!ex.rates;
+    const rate = hasRates ? ex.rates[currency] : null;
+    const pct = hasRates ? (rate - minRate) / spread : 0;
+    const gClass = hasRates ? gradeClass(pct) : 'google-place';
+    const rb = rankBadge(rank);
+    const d = distText(ex.distance);
+    const statusDot = ex.open === true ? 'open' : ex.open === false ? 'closed' : '';
+    const statusText = ex.open === true ? 'Open' : ex.open === false ? 'Closed' : '?';
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${ex.lat},${ex.lng}`;
+
+    // Rate row with mini grade bars
+    const rateRowHtml = hasRates ? `
+      <div class="rate-row">
+        ${['USD','EUR','RUB'].map(c => {
+          const r = ex.rates[c];
+          const isActive = c === currency;
+          const midMkt = {USD:31.74,EUR:34.50,RUB:0.344}[c] || 1;
+          const barPct = Math.min(100, Math.max(0, ((r/midMkt)-0.95)*20*100));
+          const barColor = barPct > 60 ? 'var(--grade1)' : barPct > 30 ? 'var(--grade2)' : 'var(--grade3)';
+          return `<div class="rate-box ${isActive?'active-currency':''}">
+            <div class="rate-currency">${c}</div>
+            <div class="rate-value ${isActive?'highlight':''}">${r}</div>
+            <div class="mini-grade" style="width:${barPct}%;background:${barColor}"></div>
+          </div>`;
+        }).join('')}
+      </div>` : `<div style="font-size:0.7rem;color:var(--text-muted);padding:4px 0 6px">📊 Rates not listed · click to open</div>`;
+
+    // Badges
+    const amount = parseFloat(document.getElementById('amountIn').value) || 500;
+    let badges = '';
+    if (hasRates && rank === 1) badges += `<div class="badge save">Best on island +${(((rate-minRate)*amount)).toFixed(0)}฿ vs worst</div>`;
+    if (hasRates && ex.distance && ex.distance <= 800 && rank <= 3) badges += `<div class="badge nearby">📍 Nearest top-rate</div>`;
+    if (!hasRates) badges += `<div class="badge google">via Google Maps</div>`;
+
+    const websiteBtn = ex.website ? `<button class="nav-btn" onclick="event.stopPropagation();window.open('${ex.website}','_blank')" title="Website">🌐</button>` : '';
+
+    return `
+    <div class="exchange-card ${gClass} ${rank===1?'best':''}" id="card-${ex.id}"
+         style="animation-delay:${Math.min(i,12)*0.04}s"
+         onclick="focusExchanger('${ex.id}')">
+      <div class="rank-badge ${rb.cls}">${rb.label}</div>
+      <div class="card-top">
+        <div class="exchanger-icon" style="background:${ex.fromGoogle?'#0a1a2a':'#1a2a1a'}">${ex.icon}</div>
+        <div class="exchanger-info">
+          <div class="exchanger-name">${ex.name}</div>
+          <div class="exchanger-meta">
+            ${statusDot ? `<span class="meta-item"><div class="status-dot ${statusDot}"></div>${statusText}</span>` : `<span>${statusText}</span>`}
+            ${d ? `<span class="meta-item">📍 ${d}</span>` : `<span>${ex.area}</span>`}
+            ${ex.rating ? `<span class="meta-item">⭐ ${ex.rating}</span>` : ''}
+            ${ex.noCommission ? `<span style="color:var(--green)">No comm.</span>` : ''}
+          </div>
+        </div>
+      </div>
+      ${rateRowHtml}
+      <div class="card-footer">
+        <div class="card-badges">${badges}</div>
+        <div class="card-actions">
+          ${websiteBtn}
+          <button class="nav-btn blue" onclick="event.stopPropagation();window.open('${mapsUrl}','_blank')">→ Maps</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('exchangeList').innerHTML = html || '<div style="padding:20px;text-align:center;color:var(--text-muted)">No results</div>';
+}
+
+window.onUpdate = function onUpdate() {
+  calcRate();
+  updateComparison();
+  renderList();
+}
+
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderList();
+}
+
+function focusExchanger(id) {
+  const ex = allExchangers.find(e => e.id === id);
+  if (!ex || !map) return;
+  map.panTo({ lat:ex.lat, lng:ex.lng });
+  map.setZoom(16);
+  const m = markers.find(m => m.ex.id === id);
+  if (m) google.maps.event.trigger(m.marker, 'click');
+}
+
+function initMap() {
+  document.getElementById('mapLoading').style.display = 'none';
+  map = new google.maps.Map(document.getElementById('googleMap'), {
+    center: PATONG, zoom: 14,
+    mapTypeControl:false, streetViewControl:false, fullscreenControl:false,
+  });
+  infoWindow = new google.maps.InfoWindow();
+
+  // Force single-finger pan on mobile
+  const mapDiv = document.getElementById('googleMap');
+  mapDiv.addEventListener('touchstart', function(e) {
+    if(e.touches.length === 1) e.stopPropagation();
+  }, {passive: true});
+  knownExchangers.forEach(ex => placeMarker(ex, false));
+
+  service = new google.maps.places.PlacesService(map);
+  searchNearby();
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      userPos = { lat:pos.coords.latitude, lng:pos.coords.longitude };
+      new google.maps.Marker({
+        position:userPos, map,
+        icon:{ path:google.maps.SymbolPath.CIRCLE, scale:8, fillColor:'#4A9EFF', fillOpacity:1, strokeColor:'#fff', strokeWeight:2 },
+        zIndex:999
+      });
+      map.setCenter(userPos);
+      allExchangers.forEach(ex => { ex.distance = calcDist(userPos, ex); });
+      // TRANSLATIONS
+const T = {
+  en: { calc:'CURRENCY CALCULATOR', best:'Best Rate Now', nearby:'Nearby',
+        open:'Open', closed:'Closed', noComm:'No commission', navigate:'Navigate',
+        all:'All', openNow:'Open now', noComm2:'No commission', km:'≤ 1km', rated:'⭐ 4.5+',
+        ranked:'RANKED BY RATE', found:'found', note:'* Rates Mar 11, 2026 · Google Places live · Verify at counter' },
+  ru: { calc:'КАЛЬКУЛЯТОР ВАЛЮТ', best:'Лучший курс', nearby:'Рядом',
+        open:'Открыт', closed:'Закрыт', noComm:'Без комиссии', navigate:'Маршрут',
+        all:'Все', openNow:'Открыт', noComm2:'Без комиссии', km:'≤ 1км', rated:'⭐ 4.5+',
+        ranked:'РЕЙТИНГ КУРСОВ', found:'найдено', note:'* Курсы на 11 мар 2026 · Google Places · Проверяйте на месте' },
+  zh: { calc:'货币计算器', best:'最佳汇率', nearby:'附近',
+        open:'营业中', closed:'已关闭', noComm:'免手续费', navigate:'导航',
+        all:'全部', openNow:'营业中', noComm2:'免手续费', km:'≤1公里', rated:'⭐ 4.5+',
+        ranked:'汇率排名', found:'找到', note:'* 2026年3月11日汇率 · 请在柜台确认' },
+  th: { calc:'เครื่องคำนวณสกุลเงิน', best:'อัตราที่ดีที่สุด', nearby:'ใกล้ฉัน',
+        open:'เปิด', closed:'ปิด', noComm:'ไม่มีค่าธรรมเนียม', navigate:'นำทาง',
+        all:'ทั้งหมด', openNow:'เปิดอยู่', noComm2:'ไม่มีค่าธรรมเนียม', km:'≤1กม', rated:'⭐ 4.5+',
+        ranked:'จัดอันดับตามอัตรา', found:'พบ', note:'* อัตรา 11 มี.ค. 2026 · ยืนยันที่เคาน์เตอร์' },
+  de: { calc:'WÄHRUNGSRECHNER', best:'Bester Kurs', nearby:'In der Nähe',
+        open:'Geöffnet', closed:'Geschlossen', noComm:'Keine Gebühr', navigate:'Navigation',
+        all:'Alle', openNow:'Geöffnet', noComm2:'Keine Gebühr', km:'≤1km', rated:'⭐ 4.5+',
+        ranked:'KURS-RANKING', found:'gefunden', note:'* Kurse 11. März 2026 · Am Schalter prüfen' },
+  fr: { calc:'CALCULATEUR DE DEVISES', best:'Meilleur taux', nearby:'À proximité',
+        open:'Ouvert', closed:'Fermé', noComm:'Sans commission', navigate:'Naviguer',
+        all:'Tous', openNow:'Ouvert', noComm2:'Sans commission', km:'≤1km', rated:'⭐ 4.5+',
+        ranked:'CLASSEMENT', found:'trouvé', note:'* Taux du 11 mars 2026 · Vérifier au comptoir' },
+};
+
+let currentLang = 'en';
+
+function setLang(lang, el) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.remove('active');
+    if(b.textContent.includes(langFlag(lang))) b.classList.add('active');
+  });
+  applyTranslations();
+  onUpdate();
+}
+function langFlag(lang) {
+  return {en:'EN', ru:'RU', zh:'中文', th:'ไทย', de:'DE', fr:'FR'}[lang] || 'EN';
+}
+
+function applyTranslations() {
+  const t = T[currentLang] || T.en;
+  // Calc label
+  const cl = document.querySelector('.calc-label');
+  if(cl) cl.textContent = t.calc;
+  // Rate note
+  const rn = document.querySelector('.rate-note');
+  if(rn) rn.textContent = t.note;
+  // List title
+  const lt = document.querySelector('.list-title');
+  if(lt) lt.textContent = t.ranked;
+  // Filter chips
+  const chips = document.querySelectorAll('.filter-chip');
+  const chipTexts = [t.all, t.openNow, t.noComm2, t.km, t.rated];
+  chips.forEach((c,i) => { if(chipTexts[i]) c.textContent = chipTexts[i]; });
+}
+
+onUpdate();
+applyTranslations();
+    });
+  }
+  onUpdate();
+}
+
+function searchNearby() {
+  const queries = ['currency exchange Phuket', 'แลกเงิน ภูเก็ต'];
+  let done = 0; const found = new Map();
+  queries.forEach(q => {
+    service.nearbySearch({ location:PATONG, radius:15000, keyword:q }, (results, status) => {
+      done++;
+      if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+        results.forEach(p => { if (!found.has(p.place_id)) found.set(p.place_id, p); });
+      }
+      if (done === queries.length) processGooglePlaces([...found.values()]);
+    });
+  });
+}
+
+function processGooglePlaces(places) {
+  const newPlaces = places.filter(p => {
+    const plat = p.geometry.location.lat(), plng = p.geometry.location.lng();
+    return !knownExchangers.some(k => Math.abs(k.lat-plat)<0.0005 && Math.abs(k.lng-plng)<0.0005);
+  });
+  googlePlaces = newPlaces.map(p => ({
+    id:'g_'+p.place_id, name:p.name, area:'Phuket',
+    address:p.vicinity||'', lat:p.geometry.location.lat(), lng:p.geometry.location.lng(),
+    rating:p.rating||null, reviews:p.user_ratings_total||0,
+    open:p.opening_hours ? p.opening_hours.open_now : null,
+    noCommission:false, website:null, rates:null, icon:'📍', fromGoogle:true,
+  }));
+  allExchangers = [...knownExchangers, ...googlePlaces];
+  if (userPos) allExchangers.forEach(ex => { ex.distance = calcDist(userPos, ex); });
+  googlePlaces.forEach(ex => placeMarker(ex, true));
+  onUpdate();
+  document.getElementById('headerStatus').textContent = `Patong Beach · ${allExchangers.length} exchanges found`;
+  document.getElementById('listCount').textContent = allExchangers.length + ' found';
+  showToast(`✅ Found ${googlePlaces.length} more via Google Maps`);
+}
+
+function placeMarker(ex, isGoogle) {
+  const currency = document.getElementById('currencyFrom').value;
+  const marker = new google.maps.Marker({
+    position:{ lat:ex.lat, lng:ex.lng }, map,
+    title:ex.name, zIndex:isGoogle?5:10,
+    icon:{
+      path:google.maps.SymbolPath.CIRCLE,
+      scale:isGoogle?9:13,
+      fillColor:isGoogle?'#4A9EFF':(ex.id==='k4'?'#C9A84C':'#2d5a2d'),
+      fillOpacity:0.9,
+      strokeColor:isGoogle?'#fff':(ex.id==='k4'?'#E8C96A':'#4CAF7D'),
+      strokeWeight:2,
+    }
+  });
+  marker.addListener('click', () => showInfoWindow(ex, marker));
+  markers.push({ marker, ex });
+}
+
+function showInfoWindow(ex, marker) {
+  const currency = document.getElementById('currencyFrom').value;
+  const rateHtml = ex.rates ? `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:8px 0">
+      ${['USD','EUR','RUB'].map(c => `
+        <div style="text-align:center;background:#1e1e1e;border-radius:6px;padding:5px">
+          <div style="font-size:10px;color:#888">${c}</div>
+          <div style="font-size:13px;font-weight:700;color:${c===currency?'#E8C96A':'#F0EDE8'};font-family:Syne,sans-serif">${ex.rates[c]}</div>
+        </div>`).join('')}
+    </div>` : `<p style="color:#888;font-size:11px;margin:6px 0">Rates not listed</p>`;
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${ex.lat},${ex.lng}`;
+  infoWindow.setContent(`
+    <div style="font-family:'DM Sans',sans-serif;background:#151515;color:#F0EDE8;padding:12px;border-radius:10px;min-width:220px">
+      <div style="font-family:Syne,sans-serif;font-weight:700;font-size:14px;margin-bottom:3px">${ex.icon} ${ex.name}</div>
+      <div style="font-size:11px;color:#888;margin-bottom:2px">📍 ${ex.address}</div>
+      ${ex.rating ? `<div style="font-size:11px;color:#888">⭐ ${ex.rating} (${ex.reviews.toLocaleString()}) ${ex.open===true?'· <span style="color:#4CAF7D">Open</span>':''}</div>` : ''}
+      ${rateHtml}
+      <div style="display:flex;gap:8px;margin-top:8px">
+        ${ex.website ? `<a href="${ex.website}" target="_blank" style="color:#4A9EFF;font-size:11px">🌐 Website</a>` : ''}
+        <a href="${mapsUrl}" target="_blank" style="color:#C9A84C;font-size:11px">🗺️ Open Maps</a>
+      </div>
+    </div>`);
+  infoWindow.open(map, marker);
+  const card = document.getElementById('card-'+ex.id);
+  if (card) { card.style.outline='1px solid var(--gold)'; card.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+const tickerVals = [31.74, 34.50, 0.344, 40.90, 19.80, 0.212, 8.64, 4.35];
+const tickerDecimals = [2, 2, 3, 2, 2, 3, 2, 2];
+const tickerDeltas = [0.03, 0.04, 0.0005, 0.05, 0.03, 0.0003, 0.02, 0.01];
+setInterval(() => {
+  tickerVals.forEach((v, i) => {
+    tickerVals[i] += (Math.random()-.5) * tickerDeltas[i];
+    const el = document.getElementById('t'+(i+1));
+    if(el) el.textContent = tickerVals[i].toFixed(tickerDecimals[i]);
+  });
+}, 4000);
+
+onUpdate();
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBThv7AAcgOQK-Bcuj_B1iazhgHnmTUAEc&libraries=places&callback=initMap" async defer></script>
+</body>
+</html>
